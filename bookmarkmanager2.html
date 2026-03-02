@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Bookmark Manager</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>My Bookmarks</h1>
+  </header>
+  <main>
+    <section id="add-bookmark">
+      <h2>Add a Bookmark</h2>
+      <form id="bookmark-form">
+        <input type="text" id="bookmark-title" placeholder="Title" required>
+        <input type="url" id="bookmark-url" placeholder="https://example.com" required>
+        <select id="bookmark-category">
+          <option value="primary">Primary</option>
+          <option value="secondary">Secondary</option>
+        </select>
+        <button type="submit">Add</button>
+      </form>
+    </section>
+
+    <section id="bookmarks-list">
+      <h2>Primary Bookmarks</h2>
+      <ul id="primary-list" class="bookmark-list"></ul>
+
+      <h2>Secondary Bookmarks</h2>
+      <ul id="secondary-list" class="bookmark-list"></ul>
+    </section>
+  </main>
+  <footer>
+    <button id="clear-all">Clear All</button>
+  </footer>
+
+  <script src="script.js" defer></script>
+</body>
+</html>
