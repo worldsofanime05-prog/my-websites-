@@ -3,8 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const titleInput = document.getElementById('bookmark-title');
   const urlInput = document.getElementById('bookmark-url');
   const categorySelect = document.getElementById('bookmark-category');
-  const primaryList = document.getElementById('primary-list');
-  const secondaryList = document.getElementById('secondary-list');
+  const listContainer = document.getElementById('bookmarks-list');
   const clearBtn = document.getElementById('clear-all');
 
   let bookmarks = [];
@@ -42,28 +41,61 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  function getColorForCategory(cat) {
+    switch (cat) {
+      case 'primary': return 'var(--primary-color)';
+      case 'secondary': return 'var(--secondary-color)';
+      case 'tertiary': return '#f59e0b'; // amber
+      case 'work': return '#10b981'; // emerald
+      case 'personal': return '#8b5cf6'; // purple
+      case 'other': return '#9ca3af'; // gray
+      default: return 'var(--primary-color)';
+    }
+  }
+
   function renderBookmarks() {
-    primaryList.innerHTML = '';
-    secondaryList.innerHTML = '';
+    // clear container
+    listContainer.innerHTML = '';
 
+    // group bookmarks by category
+    const groups = {};
     bookmarks.forEach(book => {
-      const li = document.createElement('li');
-      const link = document.createElement('a');
-      link.href = book.url;
-      link.target = '_blank';
-      link.textContent = book.title;
-      li.appendChild(link);
+      if (!groups[book.category]) groups[book.category] = [];
+      groups[book.category].push(book);
+    });
 
-      const delBtn = document.createElement('button');
-      delBtn.textContent = 'Delete';
-      delBtn.addEventListener('click', () => deleteBookmark(book.id));
-      li.appendChild(delBtn);
+    // sort categories alphabetically for consistent order
+    Object.keys(groups).sort().forEach(category => {
+      const section = document.createElement('section');
+      const heading = document.createElement('h2');
+      heading.textContent = `${category.charAt(0).toUpperCase() + category.slice(1)} Bookmarks`;
+      section.appendChild(heading);
 
-      if (book.category === 'primary') {
-        primaryList.appendChild(li);
-      } else {
-        secondaryList.appendChild(li);
-      }
+      const ul = document.createElement('ul');
+      ul.className = 'bookmark-list';
+
+      groups[category].forEach(book => {
+        const li = document.createElement('li');
+
+        // give a colored border depending on category
+        li.style.borderLeftColor = getColorForCategory(book.category);
+
+        const link = document.createElement('a');
+        link.href = book.url;
+        link.target = '_blank';
+        link.textContent = book.title;
+        li.appendChild(link);
+
+        const delBtn = document.createElement('button');
+        delBtn.textContent = 'Delete';
+        delBtn.addEventListener('click', () => deleteBookmark(book.id));
+        li.appendChild(delBtn);
+
+        ul.appendChild(li);
+      });
+
+      section.appendChild(ul);
+      listContainer.appendChild(section);
     });
   }
 
@@ -81,6 +113,8 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function deleteBookmark(id) {
+    const book = bookmarks.find(b => b.id === id);
+    if (book && !confirm(`Delete "${book.title}"?`)) return;
     bookmarks = bookmarks.filter(b => b.id !== id);
     saveBookmarks();
     renderBookmarks();
