@@ -16,21 +16,21 @@
       <form id="bookmark-form">
         <input type="text" id="bookmark-title" placeholder="Title" required>
         <input type="url" id="bookmark-url" placeholder="https://example.com" required>
+        <!-- expanded category chooser -->
         <select id="bookmark-category">
           <option value="primary">Primary</option>
           <option value="secondary">Secondary</option>
+          <option value="tertiary">Tertiary</option>
+          <option value="work">Work</option>
+          <option value="personal">Personal</option>
+          <option value="other">Other</option>
         </select>
         <button type="submit">Add</button>
       </form>
     </section>
 
-    <section id="bookmarks-list">
-      <h2>Primary Bookmarks</h2>
-      <ul id="primary-list" class="bookmark-list"></ul>
-
-      <h2>Secondary Bookmarks</h2>
-      <ul id="secondary-list" class="bookmark-list"></ul>
-    </section>
+    <!-- bookmarks are now rendered dynamically in script.js -->
+    <div id="bookmarks-list"></div>
   </main>
   <footer>
     <button id="clear-all">Clear All</button>
