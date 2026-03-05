@@ -19,7 +19,10 @@
 
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: linear-gradient(135deg, var(--background) 0%, #f1f5f9 100%);
+  background: url('landscape.png.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   color: var(--text-primary);
   min-height: 100vh;
   display: flex;
@@ -273,5 +276,14 @@ footer {
   #bookmark-form input,
   #bookmark-form select {
     font-size: 16px; /* Prevents zoom on iOS */
+  }
+}
+
+@media (max-width: 768px) {
+  body {
+    background: url('columbinawallpaper.png.jfif');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
   }
 } 
