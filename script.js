@@ -1,15 +1,52 @@
-document.addEventListener('DOMContentLoaded', () => {
+ document.addEventListener('DOMContentLoaded', () => {
   const form = document.getElementById('bookmark-form');
   const titleInput = document.getElementById('bookmark-title');
   const urlInput = document.getElementById('bookmark-url');
+  const descriptionInput = document.getElementById('bookmark-description');
   const categorySelect = document.getElementById('bookmark-category');
   const listContainer = document.getElementById('bookmarks-list');
   const clearBtn = document.getElementById('clear-all');
+  const addCategoryBtn = document.getElementById('add-category-btn');
+  const categoriesListContainer = document.getElementById('categories-list');
+  const settingsBtn = document.getElementById('settings-btn');
+  const settingsModal = document.getElementById('settings-modal');
+  const closeSettingsBtn = document.getElementById('close-settings-btn');
+  const settingsModalOverlay = document.querySelector('.settings-modal-overlay');
 
   let bookmarks = [];
+  let categories = [];
+
+  // Settings modal functions
+  function openSettings() {
+    settingsModal.classList.remove('hidden');
+  }
+
+  function closeSettings() {
+    settingsModal.classList.add('hidden');
+  }
 
   function saveBookmarks() {
     localStorage.setItem('bookmarks', JSON.stringify(bookmarks));
+  }
+
+  function saveCategories() {
+    localStorage.setItem('categories', JSON.stringify(categories));
+  }
+
+  function loadCategories() {
+    const data = localStorage.getItem('categories');
+    if (data) {
+      categories = JSON.parse(data);
+    } else {
+      categories = [
+        { key: 'primary', label: 'Primary' },
+        { key: 'secondary', label: 'Secondary' },
+        { key: 'tertiary', label: 'Tertiary' },
+        { key: 'work', label: 'Work' },
+        { key: 'personal', label: 'Personal' },
+        { key: 'other', label: 'Other' }
+      ];
+    }
   }
 
   function loadBookmarks() {
@@ -42,15 +79,135 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function getColorForCategory(cat) {
-    switch (cat) {
-      case 'primary': return 'var(--primary-color)';
-      case 'secondary': return 'var(--secondary-color)';
-      case 'tertiary': return '#f59e0b'; // amber
-      case 'work': return '#10b981'; // emerald
-      case 'personal': return '#8b5cf6'; // purple
-      case 'other': return '#9ca3af'; // gray
-      default: return 'var(--primary-color)';
+    const colors = [
+      'var(--primary-color)',
+      'var(--secondary-color)',
+      '#f59e0b',
+      '#10b981',
+      '#8b5cf6',
+      '#9ca3af',
+      '#f97316',
+      '#06b6d4',
+      '#84cc16',
+      '#ec4899'
+    ];
+    const index = categories.findIndex(c => c.key === cat);
+    return colors[index % colors.length] || 'var(--primary-color)';
+  }
+
+  function updateCategorySelect() {
+    while (categorySelect.children.length > 1) {
+      categorySelect.removeChild(categorySelect.lastChild);
     }
+    categories.forEach(cat => {
+      const option = document.createElement('option');
+      option.value = cat.key;
+      option.textContent = cat.label;
+      categorySelect.appendChild(option);
+    });
+  }
+
+  function renderCategories() {
+    categoriesListContainer.innerHTML = '';
+    categories.forEach((cat, index) => {
+      const div = document.createElement('div');
+      div.className = 'category-item';
+
+      // Color preview badge
+      const colorBadge = document.createElement('div');
+      colorBadge.className = 'category-color-badge';
+      colorBadge.style.backgroundColor = getColorForCategory(cat.key);
+      colorBadge.title = cat.key;
+      div.appendChild(colorBadge);
+
+      // Content wrapper
+      const contentWrapper = document.createElement('div');
+      contentWrapper.className = 'category-content';
+
+      // Header with key and count
+      const header = document.createElement('div');
+      header.className = 'category-header';
+      
+      const keySpan = document.createElement('span');
+      keySpan.className = 'category-key';
+      keySpan.textContent = cat.key;
+      header.appendChild(keySpan);
+
+      const countSpan = document.createElement('span');
+      countSpan.className = 'category-count';
+      const bookmarkCount = bookmarks.filter(b => b.category === cat.key).length;
+      countSpan.textContent = `${bookmarkCount} bookmark${bookmarkCount !== 1 ? 's' : ''}`;
+      header.appendChild(countSpan);
+
+      contentWrapper.appendChild(header);
+
+      // Input field
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.value = cat.label;
+      input.placeholder = 'Category name';
+      input.className = 'category-label-input';
+      input.addEventListener('input', (e) => {
+        cat.label = e.target.value.trim() || cat.key;
+        saveCategories();
+        updateCategorySelect();
+        renderBookmarks();
+      });
+      contentWrapper.appendChild(input);
+
+      div.appendChild(contentWrapper);
+
+      // Delete button
+      const deleteBtn = document.createElement('button');
+      deleteBtn.type = 'button';
+      deleteBtn.className = 'delete-category-btn';
+      
+      if (cat.key === 'other') {
+        deleteBtn.disabled = true;
+        deleteBtn.innerHTML = '🔒';
+        deleteBtn.title = 'Cannot delete default category';
+      } else {
+        deleteBtn.innerHTML = '🗑️';
+        deleteBtn.title = 'Delete this category';
+        deleteBtn.addEventListener('click', () => deleteCategory(cat.key));
+      }
+
+      div.appendChild(deleteBtn);
+      categoriesListContainer.appendChild(div);
+    });
+  }
+
+  function addCategory() {
+    const key = prompt('Enter category key (unique identifier, e.g., shopping):');
+    if (!key || key.trim() === '') return;
+    const trimmedKey = key.trim().toLowerCase();
+    if (categories.some(cat => cat.key === trimmedKey)) {
+      alert('Category key already exists!');
+      return;
+    }
+    const label = prompt('Enter category label (display name):') || trimmedKey;
+    categories.push({ key: trimmedKey, label: label.trim() });
+    saveCategories();
+    renderCategories();
+    updateCategorySelect();
+  }
+
+  function deleteCategory(keyToDelete) {
+    if (keyToDelete === 'other') return;
+    if (!confirm(`Delete category "${keyToDelete}"? Bookmarks in this category will be moved to "Other".`)) return;
+    
+    bookmarks.forEach(book => {
+      if (book.category === keyToDelete) {
+        book.category = 'other';
+      }
+    });
+    saveBookmarks();
+    
+    categories = categories.filter(cat => cat.key !== keyToDelete);
+    saveCategories();
+    renderCategories();
+    updateCategorySelect();
+    renderBookmarks();
   }
 
   function renderBookmarks() {
@@ -64,27 +221,45 @@ document.addEventListener('DOMContentLoaded', () => {
       groups[book.category].push(book);
     });
 
-    // sort categories alphabetically for consistent order
-    Object.keys(groups).sort().forEach(category => {
+    // sort categories by order in categories array
+    categories.forEach(cat => {
+      const categoryKey = cat.key;
+      if (!groups[categoryKey]) return;
+      
       const section = document.createElement('section');
       const heading = document.createElement('h2');
-      heading.textContent = `${category.charAt(0).toUpperCase() + category.slice(1)} Bookmarks`;
+      heading.textContent = `${cat.label} Bookmarks`;
       section.appendChild(heading);
 
       const ul = document.createElement('ul');
       ul.className = 'bookmark-list';
 
-      groups[category].forEach(book => {
+      groups[categoryKey].forEach(book => {
         const li = document.createElement('li');
 
         // give a colored border depending on category
         li.style.borderLeftColor = getColorForCategory(book.category);
 
+        // Create a content wrapper for link and description
+        const contentWrapper = document.createElement('div');
+        contentWrapper.className = 'bookmark-content';
+
         const link = document.createElement('a');
         link.href = book.url;
         link.target = '_blank';
         link.textContent = book.title;
-        li.appendChild(link);
+        link.className = 'bookmark-title';
+        contentWrapper.appendChild(link);
+
+        // Add description if it exists
+        if (book.description) {
+          const descriptionEl = document.createElement('p');
+          descriptionEl.className = 'bookmark-description-text';
+          descriptionEl.textContent = book.description;
+          contentWrapper.appendChild(descriptionEl);
+        }
+
+        li.appendChild(contentWrapper);
 
         const delBtn = document.createElement('button');
         delBtn.textContent = 'Delete';
@@ -103,9 +278,10 @@ document.addEventListener('DOMContentLoaded', () => {
     e.preventDefault();
     const title = titleInput.value.trim();
     const url = urlInput.value.trim();
+    const description = descriptionInput.value.trim();
     const category = categorySelect.value;
     if (!title || !url) return;
-    const newBookmark = { id: Date.now(), title, url, category };
+    const newBookmark = { id: Date.now(), title, url, description, category };
     bookmarks.push(newBookmark);
     saveBookmarks();
     renderBookmarks();
@@ -130,7 +306,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   form.addEventListener('submit', addBookmark);
   clearBtn.addEventListener('click', clearAll);
+  addCategoryBtn.addEventListener('click', addCategory);
+  settingsBtn.addEventListener('click', openSettings);
+  closeSettingsBtn.addEventListener('click', closeSettings);
+  settingsModalOverlay.addEventListener('click', closeSettings);
 
+  loadCategories();
+  renderCategories();
+  updateCategorySelect();
   loadBookmarks();
   renderBookmarks();
 });
