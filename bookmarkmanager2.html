@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -9,15 +9,44 @@
 <body>
   <header>
     <h1>My Bookmarks</h1>
+    <button type="button" id="settings-btn" class="settings-btn" title="Settings">⚙️</button>
   </header>
+
+  <!-- Settings Modal -->
+  <div id="settings-modal" class="settings-modal hidden">
+    <div class="settings-modal-overlay"></div>
+    <div class="settings-modal-content">
+      <div class="settings-modal-header">
+        <h2>Settings</h2>
+        <button type="button" id="close-settings-btn" class="close-settings-btn">✕</button>
+      </div>
+      <div class="settings-modal-body">
+        <section id="manage-categories">
+          <div class="manage-categories-header">
+            <div>
+              <h3>Manage Categories</h3>
+              <p class="section-subtitle">Customize, rename, or delete your bookmark categories</p>
+            </div>
+          </div>
+          <div id="categories-list" class="categories-list">
+            <!-- Dynamic category items will be added here -->
+          </div>
+          <button type="button" id="add-category-btn" class="add-category-btn">+ Add New Category</button>
+        </section>
+      </div>
+    </div>
+  </div>
+
   <main>
+
     <section id="add-bookmark">
       <h2>Add a Bookmark</h2>
       <form id="bookmark-form">
         <input type="text" id="bookmark-title" placeholder="Title" required>
         <input type="url" id="bookmark-url" placeholder="https://example.com" required>
         <!-- expanded category chooser -->
-        <select id="bookmark-category">
+        <select id="bookmark-category" required>
+          <option value="">-- Select Category --</option>
           <option value="primary">Primary</option>
           <option value="secondary">Secondary</option>
           <option value="tertiary">Tertiary</option>
@@ -25,6 +54,7 @@
           <option value="personal">Personal</option>
           <option value="other">Other</option>
         </select>
+        <textarea id="bookmark-description" placeholder="Add a description of the site (optional)" class="bookmark-description"></textarea>
         <button type="submit">Add</button>
       </form>
     </section>
